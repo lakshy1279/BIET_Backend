@@ -1,8 +1,9 @@
 const User = require("../../../models/user");
 const jwt = require("jsonwebtoken");
+const path = require("path");
+const fs = require("fs");
 module.exports.createSession = async function (req, res) {
   try {
-    console.log(req.body);
     let user = await User.findOne({ email: req.body.email });
     if (!user || user.password != req.body.password) {
       return res.json(422, {
@@ -29,6 +30,51 @@ module.exports.createSession = async function (req, res) {
     });
   }
 };
+module.exports.update = async function (req, res) {
+  try {
+    console.log(req.params.id);
+    let user = await User.findById(req.params.id);
+    User.uploadedAvatar(req, res, function (err) {
+      if (err) {
+        console.log("******Multer Error", err);
+      }
+      console.log(user);
+      // user.update(req.body);
+      user.name = req.body.name;
+      user.email = req.body.email;
+      user.skills = req.body.skills;
+      console.log(req.file);
+      if (req.file) {
+        if (user.avatar) {
+          if (fs.existsSync(path.join(__dirname, "../../../", user.avatar))) {
+            fs.unlinkSync(path.join(__dirname, "../../../", user.avatar));
+          }
+        }
+
+        //this is saving path of the uploaded file into the user avatr
+        user.avatar = User.avatarpath + "/" + req.file.filename;
+      }
+      user.save();
+      return res.json(200, {
+        message: "user updated successfuly",
+        success: true,
+        data: {
+          user: {
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            skills: user.skills,
+          },
+        },
+      });
+    });
+  } catch (err) {
+    console.log(err);
+    return res.json(500, {
+      message: "internal server error",
+    });
+  }
+};
 module.exports.getUsers = async function (req, res) {
   try {
     console.log(req.query.admin);
@@ -43,7 +89,7 @@ module.exports.getUsers = async function (req, res) {
       message: "Sign up successful, user created",
       success: true,
       data: {
-        admin: users,
+        user: users,
       },
     });
   } catch (err) {
@@ -69,6 +115,7 @@ module.exports.create = async function (req, res) {
       });
     }
     let newUser = await User.create(req.body);
+    console.log(newUser);
     return res.json(200, {
       message: "Sign up successful, user created",
       success: true,

@@ -6,6 +6,7 @@ const cors = require("cors");
 const passportJWT = require("./config/passport-jwt-strategy");
 app.use(cors());
 app.use(express.urlencoded({ extended: false }));
+app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use("/", require("./routes"));
 app.listen(port, function (err) {
   if (err) {

@@ -2,6 +2,23 @@ const User = require("../../../models/user");
 const jwt = require("jsonwebtoken");
 const path = require("path");
 const fs = require("fs");
+module.exports.getSorted = async function (req, res) {
+  try {
+    let users = await User.find({ year: req.params.year }, { password: 0 });
+    return res.json(200, {
+      message: "Here is your sorted data",
+      success: true,
+      data: {
+        user: users,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return res.json(500, {
+      message: "internal server error",
+    });
+  }
+};
 module.exports.createSession = async function (req, res) {
   try {
     let user = await User.findOne({ email: req.body.email });
@@ -13,7 +30,7 @@ module.exports.createSession = async function (req, res) {
 
     return res.json(200, {
       data: {
-        token: jwt.sign(user.toJSON(), env.jwt_secret),
+        token: jwt.sign(user.toJSON(), "biet"),
         user: {
           name: user.name,
           email: user.email,
@@ -59,6 +76,7 @@ module.exports.update = async function (req, res) {
         message: "user updated successfuly",
         success: true,
         data: {
+          token: jwt.sign(user.toJSON(), "biet"),
           user: {
             name: user.name,
             email: user.email,
@@ -78,7 +96,7 @@ module.exports.update = async function (req, res) {
 module.exports.getUsers = async function (req, res) {
   try {
     console.log(req.query.admin);
-    let users = await User.find({ aluminia: req.query.admin });
+    let users = await User.find({ aluminia: req.query.admin }, { password: 0 });
     console.log(users);
     if (!users) {
       return res.json(422, {
@@ -125,6 +143,48 @@ module.exports.create = async function (req, res) {
           name: newUser.name,
           email: newUser.email,
           _id: newUser._id,
+        },
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return res.json(500, {
+      message: "internal server error",
+    });
+  }
+};
+module.exports.searchUsers = async function (req, res) {
+  console.log(req.query.text);
+  try {
+    const regex = new RegExp(req.query.text, "i");
+    const result = await User.find({
+      name: regex,
+    }).select("name");
+    console.log(result);
+    return res.status(200).json({
+      success: true,
+      data: {
+        users: result,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return res.json(500, {
+      message: "internal server error",
+    });
+  }
+};
+module.exports.profile = async function (req, res) {
+  try {
+    console.log(req.params);
+    let user = await User.findById(req.params.id);
+    return res.json(200, {
+      success: true,
+      data: {
+        user: {
+          name: user.name,
+          email: user.email,
+          _id: user._id,
         },
       },
     });

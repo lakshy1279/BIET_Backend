@@ -1,5 +1,6 @@
 const Post = require("../../../models/post");
 const Comment = require("../../../models/comment");
+const Like = require("../../../models/like");
 const passport = require("passport");
 module.exports.create = async function (req, res) {
   console.log(req.user);
@@ -40,16 +41,17 @@ module.exports.create = async function (req, res) {
 };
 module.exports.index = async function (req, res) {
   // console.log(req.query);
-  const limit = parseInt(req.query.limit);
-  console.log(limit);
+  // const limit = parseInt(req.query.limit);
+  // console.log(limit);
   let posts = await Post.find({})
     .sort("-createdAt")
-    .limit(limit)
-    .populate("user")
+    // .limit(limit)
+    .populate("user", "email name id")
     .populate({
       path: "comments",
       populate: {
         path: "user",
+        select: "name email",
       },
       populate: {
         path: "likes",
@@ -61,10 +63,10 @@ module.exports.index = async function (req, res) {
     message: "list of posts",
     success: true,
     data: {
-      next: {
-        page: req.query.page,
-        limit: req.query.limit,
-      },
+      // next: {
+      //   page: req.query.page,
+      //   limit: req.query.limit,
+      // },
       posts: posts,
     },
   });

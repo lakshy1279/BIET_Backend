@@ -16,4 +16,11 @@ router.post(
   // passport.authenticate("jwt", { session: false }),
   userApi.update
 );
+router.get(
+  "/sorted/:year",
+  passport.authenticate("jwt", { session: false }),
+  userApi.getSorted
+);
+router.get("/search", userApi.searchUsers);
+router.get("/profile/:id", userApi.profile);
 module.exports = router;

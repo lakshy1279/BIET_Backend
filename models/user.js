@@ -18,6 +18,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    bio: {
+      type: String,
+    },
+    friend: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Friendship",
+      },
+    ],
     avatar: {
       type: String,
     },
@@ -26,6 +35,7 @@ const userSchema = new mongoose.Schema(
     },
     year: {
       type: Number,
+      default: 0,
     },
     skills: [
       {
